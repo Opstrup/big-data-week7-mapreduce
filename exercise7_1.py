@@ -16,9 +16,6 @@ class wordCounter(MRJob):
         for word in WORD.findall(line):
             yield (word.lower(), 1)
 
-    def combine_count_word(self, word, counts):
-        yield (word, sum(counts))
-
     def reducer_counted_words(self, word, counts):
         yield (word, sum(counts))
 
