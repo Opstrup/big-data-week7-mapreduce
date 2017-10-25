@@ -1,26 +1,34 @@
 from mrjob.job import MRJob
-from mrjob.job import MRStep
-import re
+from mrjob.step import MRStep
 
-WORD = re.compile(r"[\w']+")
+class EulerChecker(MRJob):
 
-class wordCounter(MRJob):
+    def mapper_node_connections(self, _, line):
+        yield ((line[0], line[2]), 1)
+
+    def combiner_count_connections(self, connection, counts):
+        yield (connection, sum(counts))
+
+    def reducer_check_for_euler(self, _, value):
+        if (all(v == 1 for v in value)):
+            yield None, "Euler!"
+        else:
+            yield None, "Not an Euler!"
+
+    def reducer_(self, _, value):
+        if (all(v == 1 for v in value)):
+            yield None, "Euler!"
+        else:
+            yield None, "Not an Euler!"
 
     def steps(self):
         return [
-                MRStep(mapper=self.mapper_get_words,
-                       reducer=self.reducer_counted_words)
-                ]
-
-    def mapper_get_words(self, _, line):
-        for word in WORD.findall(line):
-            yield (word.lower(), 1)
-
-    def combine_count_word(self, word, counts):
-        yield (word, sum(counts))
-
-    def reducer_counted_words(self, word, counts):
-        yield (word, sum(counts))
+            MRStep(mapper=self.mapper_node_connections,
+                   combiner=self.combiner_count_connections,
+                   reducer=self.reducer_check_for_euler
+                   ),
+            #MRStep(reducer=self.reducer_check_for_euler)
+        ]
 
 if __name__ == '__main__':
-    wordCounter.run()
+    EulerChecker.run()
