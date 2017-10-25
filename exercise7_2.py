@@ -10,16 +10,13 @@ class EulerChecker(MRJob):
         yield (connection, sum(counts))
 
     def reducer_check_for_euler(self, _, value):
-        if (all(v == 1 for v in value)):
-            yield None, "Euler!"
+        if (1 != next(value)):
+            yield ("Not an euler", 1)
         else:
-            yield None, "Not an Euler!"
+            yield ("An euler", 1)
 
-    def reducer_(self, _, value):
-        if (all(v == 1 for v in value)):
-            yield None, "Euler!"
-        else:
-            yield None, "Not an Euler!"
+    def combiner_check_not_euler_appereance(self, key, values):
+        yield (key, sum(values))
 
     def steps(self):
         return [
@@ -27,7 +24,7 @@ class EulerChecker(MRJob):
                    combiner=self.combiner_count_connections,
                    reducer=self.reducer_check_for_euler
                    ),
-            #MRStep(reducer=self.reducer_check_for_euler)
+            MRStep(reducer=self.combiner_check_not_euler_appereance)
         ]
 
 if __name__ == '__main__':
