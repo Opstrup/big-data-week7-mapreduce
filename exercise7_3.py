@@ -9,7 +9,7 @@ class MostVisitedCities(MRJob):
             yield int(user),city
 
     def reducer(self,user,cities):
-        yield user,len(list(cities))
+        yield "User: "+str(user),"has visited: "+str(len(list(cities)))+" cities"
 
 
 if __name__ == '__main__':
